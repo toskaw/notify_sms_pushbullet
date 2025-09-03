@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <script>
+      const api_key="<your_key>";
+      window.onload =function () {
+	  Notification.requestPermission();
+	  var conn = new WebSocket("wss://stream.pushbullet.com/websocket/" + api_key);
+	  conn.onopen = function(e) {
+	  };
+	  conn.onmessage = function(e) {
+	      const msg = JSON.parse(e.data);
+	      console.log(e.data);
+	      if (msg.type == "push") {
+		  if (msg.push.type == "mirror") {
+		      let bin = atob(msg.push.icon);
+		      let buffer = new Uint8Array(bin.length);
+		      for(let i = 0; i < bin.length; i++){
+			  buffer[i] = bin.charCodeAt(i);
+		      }   
+		      var blob = new Blob([buffer.buffer], {
+			  type: "image/jpeg"
+		      });
+		      var blob_url = window.URL.createObjectURL(blob);
+		      var options = {
+			  body: msg.push.body,
+			  icon: blob_url,
+			  //tag: msg.push.application_name
+		      };
+		      var notification = new Notification(msg.push.title, options);
+		  }
+	      }
+	  };
+      };
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
